@@ -9,23 +9,16 @@ on:
       - master
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  deploy:
+    runs-on: self-hosted
     steps:
       - name: Checkout do código
         uses: actions/checkout@v3
 
-      - name: Instalar Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-
-      - name: Configurar Docker
-        run: |
-          docker build -t api-flask .
-          docker-compose up --build -d
-
-      - name: Implantar API Flask
+      - name: Parar containers antigos
         run: |
           docker-compose down
+
+      - name: Construir e rodar a API Flask
+        run: |
           docker-compose up --build -d
