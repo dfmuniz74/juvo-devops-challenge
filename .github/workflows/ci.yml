@@ -1,0 +1,21 @@
+name:  Pipeline de Integração Contínua (CI)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+      
+      - name: Configurar Docker
+        run: |
+          docker build -t api-flask .
+          docker-compose up --build -d
