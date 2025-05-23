@@ -20,10 +20,10 @@ jobs:
 
 
       - name: Executar testes BDD (Behave)
-        run: behave features/
+        run: python -m behave features/
 
       - name: Executar testes unitários (Pytest)
-        run: pytest tests/
+        run: python -m pytest tests/
         
       - name: Construir e rodar a API Flask
         run: docker-compose up --build -d
