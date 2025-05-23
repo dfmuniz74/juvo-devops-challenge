@@ -23,11 +23,7 @@ jobs:
 
       - name: Verificar se a API está rodando
         run: |
-          curl.exe \
-            --retry 10 \
-            --retry-delay 10 \
-            --retry-connrefused \
-            http://localhost:5000/score/33333333333
+          curl.exe --retry 10 --retry-delay 10 --retry-connrefused http://localhost:5000/score/33333333333
 
       - name: Instalar dependências Python (Behave e Pytest)
         run: |
