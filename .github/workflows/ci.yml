@@ -1,4 +1,4 @@
-name:  Pipeline de Integração Contínua (CI)
+name:  Pipeline CI/CD
 
 on:
   push:
@@ -18,7 +18,14 @@ jobs:
       - name: Parar containers antigos
         run: docker-compose down
 
-      - name: Instalar dependências Python
+      - name: Iniciar API Flask
+        run: docker-compose up --build -d
+
+      - name: Verificar se a API está rodando
+        run: |
+          curl --retry 10 --retry-delay 10 --retry-connrefused http://localhost:5000/score/33333333333
+
+      - name: Instalar dependências Python (Behave e Pytest)
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -28,6 +35,3 @@ jobs:
 
       - name: Executar testes unitários (Pytest)
         run: python -m pytest tests/
-        
-      - name: Construir e rodar a API Flask
-        run: docker-compose up --build -d
