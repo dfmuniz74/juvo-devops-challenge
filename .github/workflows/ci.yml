@@ -24,3 +24,8 @@ jobs:
         run: |
           docker build -t api-flask .
           docker-compose up --build -d
+
+      - name: Implantar API Flask
+        run: |
+          docker-compose down
+          docker-compose up --build -d
