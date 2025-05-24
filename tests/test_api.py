@@ -1,9 +1,18 @@
-import app
+import pytest
+from app import app
 
-def test_score_valido():
-    assert app.consultar_score("33333333333")[1] == 200
-    assert isinstance(app.consultar_score("33333333333")[0].json['score'], int)
+@pytest.fixture
+def client():
+    with app.test_client() as client:
+        with app.app_context():
+            yield client
 
-def test_cpf_invalido():
-    assert app.consultar_score("00000000000")[1] == 404
-    assert app.consultar_score("00000000000")[0].json['erro'] == "CPF não encontrado"
+def test_score_valido(client):
+    response = client.get("/score/33333333333")
+    assert response.status_code == 200
+    assert isinstance(response.json['score'], int)
+
+def test_cpf_invalido(client):
+    response = client.get("/score/00000000000")
+    assert response.status_code == 404
+    assert response.json['erro'] == "CPF não encontrado"
