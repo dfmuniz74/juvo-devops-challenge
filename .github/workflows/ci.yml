@@ -15,7 +15,10 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v3
         continue-on-error: false
-        run: echo "Código baixado com sucesso."
+
+      - name: Confirmação do checkout
+        run: |
+          echo "Código baixado com sucesso."
 
       - name: Parar containers existentes
         run: |
