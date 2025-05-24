@@ -27,3 +27,7 @@ def step_then_erro(context, mensagem):
     json_data = context.response.json()
     assert json_data['erro'] == mensagem
     assert context.response.status_code == 404
+
+@then('o status da resposta deve ser {status_code:d}')
+def step_then_status_code(context, status_code):
+    assert context.response.status_code == status_code
