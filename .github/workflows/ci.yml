@@ -53,17 +53,19 @@ jobs:
       - name: Executar testes BDD (Behave)
         run: |
           echo "Executando testes BDD com Behave..."
-          python -m behave features/ | tee behave_logs.txt || {
-            echo "ERRO nos testes BDD, verificar behave_logs.txt."
-            exit 1
+          python -m behave features/ | tee behave_logs.txt
+          if (-Not ($?)) {
+              echo "ERRO nos testes BDD, verificar behave_logs.txt."
+              exit 1
           }
           echo "Testes BDD concluídos."
 
       - name: Executar testes unitários (Pytest)
         run: |
           echo "Executando testes unitários com Pytest..."
-          python -m pytest tests/ -o log_cli=true --tb=short | tee pytest_logs.txt || {
-            echo "ERRO nos testes unitários, verificar pytest_logs.txt."
-            exit 1
+          python -m pytest tests/ -o log_cli=true --tb=short | tee pytest_logs.txt
+          if (-Not ($?)) {
+              echo "ERRO nos testes unitários, verificar pytest_logs.txt."
+              exit 1
           }
           echo "Testes unitários concluídos."
