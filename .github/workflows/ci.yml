@@ -23,8 +23,7 @@ jobs:
       - name: Parar containers existentes
         run: |
           echo "Parando containers existentes..."
-          docker-compose down || echo "INFO: Não há container ativo."
-          echo "Containers antigos finalizados."
+          docker-compose down; if ($?) { echo "Containers finalizados." } else { echo "INFO: Não há container ativo." }
 
       - name: Iniciar API Flask
         run: |
@@ -35,9 +34,9 @@ jobs:
       - name: Verificar se a API iniciou
         run: |
           echo "Aguardando API iniciar..."
-          curl.exe --retry 10 --retry-delay 10 --retry-connrefused http://localhost:5000/score/33333333333 || {
-            echo "ERRO: API não responde, verificar logs."
-            exit 1
+          if (-Not (curl.exe --retry 10 --retry-delay 10 --retry-connrefused http://localhost:5000/score/33333333333)) {
+              echo "ERRO: API não responde, verificar logs."
+              exit 1
           }
           echo "API iniciada com sucesso."
 
