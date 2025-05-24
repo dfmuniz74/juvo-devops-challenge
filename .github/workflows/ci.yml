@@ -1,4 +1,4 @@
-name:  Pipeline CI/CD
+name: Pipeline CI/CD
 
 on:
   push:
@@ -14,24 +14,54 @@ jobs:
     steps:
       - name: Checkout do código
         uses: actions/checkout@v3
+        continue-on-error: false
+        run: echo "Código baixado com sucesso."
 
-      - name: Parar containers antigos
-        run: docker-compose down
+      - name: Parar containers existentes
+        run: |
+          echo "Parando containers existentes..."
+          docker-compose down || echo "INFO: Não há container ativo."
+          echo "Containers antigos finalizados."
 
       - name: Iniciar API Flask
-        run: docker-compose up --build -d
-
-      - name: Verificar se a API está rodando
         run: |
-          curl.exe --retry 10 --retry-delay 10 --retry-connrefused http://localhost:5000/score/33333333333
+          echo "Iniciando API Flask via Docker Compose..."
+          docker-compose up --build -d
+          echo "API Flask iniciada com sucesso."
+
+      - name: Verificar se a API iniciou
+        run: |
+          echo "Aguardando API iniciar..."
+          curl.exe --retry 10 --retry-delay 10 --retry-connrefused http://localhost:5000/score/33333333333 || {
+            echo "ERRO: API não responde, verificar logs."
+            exit 1
+          }
+          echo "API iniciada com sucesso."
 
       - name: Instalar dependências Python (Behave e Pytest)
         run: |
+          echo "Atualizando pip..."
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          echo "Pip atualizado."
+          
+          echo "Instalando dependências (requirements.txt)..."
+          pip install -r requirements.txt | tee dependencies.log
+          echo "Dependências instaladas."
 
       - name: Executar testes BDD (Behave)
-        run: python -m behave features/
+        run: |
+          echo "Executando testes BDD com Behave..."
+          python -m behave features/ | tee behave_logs.txt || {
+            echo "ERRO nos testes BDD, verificar behave_logs.txt."
+            exit 1
+          }
+          echo "Testes BDD concluídos."
 
       - name: Executar testes unitários (Pytest)
-        run: python -m pytest tests/
+        run: |
+          echo "Executando testes unitários com Pytest..."
+          python -m pytest tests/ -o log_cli=true --tb=short | tee pytest_logs.txt || {
+            echo "ERRO nos testes unitários, verificar pytest_logs.txt."
+            exit 1
+          }
+          echo "Testes unitários concluídos."
