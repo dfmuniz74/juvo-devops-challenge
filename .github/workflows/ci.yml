@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  deploy:
+  ci:
     runs-on: self-hosted
     steps:
       - name: Checkout do código
@@ -23,7 +23,8 @@ jobs:
       - name: Parar containers existentes
         run: |
           echo "Parando containers existentes..."
-          docker-compose down; if ($?) { echo "Containers finalizados." } else { echo "INFO: Não há container ativo." }
+          docker-compose down
+          echo "Containers finalizados."
 
       - name: Iniciar API Flask
         run: |
@@ -34,10 +35,7 @@ jobs:
       - name: Verificar se a API iniciou
         run: |
           echo "Aguardando API iniciar..."
-          if (-Not (curl.exe --retry 10 --retry-delay 10 --retry-connrefused http://localhost:5000/score/33333333333)) {
-              echo "ERRO: API não responde, verificar logs."
-              exit 1
-          }
+          curl.exe --retry 10 --retry-delay 10 --retry-connrefused http://localhost:5000/score/33333333333
           echo "API iniciada com sucesso."
 
       - name: Instalar dependências Python (Behave e Pytest)
@@ -45,7 +43,6 @@ jobs:
           echo "Atualizando pip..."
           python -m pip install --upgrade pip
           echo "Pip atualizado."
-          
           echo "Instalando dependências (requirements.txt)..."
           pip install -r requirements.txt | tee dependencies.log
           echo "Dependências instaladas."
@@ -54,18 +51,67 @@ jobs:
         run: |
           echo "Executando testes BDD com Behave..."
           python -m behave features/ | tee behave_logs.txt
-          if (-Not ($?)) {
-              echo "ERRO nos testes BDD, verificar behave_logs.txt."
-              exit 1
-          }
-          echo "Testes BDD concluídos."
+
+      - name: Testes BDD concluídos
+        if: success()
+        run: echo "Testes BDD concluídos."
+
+      - name: ERRO nos testes BDD
+        if: failure()
+        run: echo "ERRO nos testes BDD, verificar behave_logs.txt."
 
       - name: Executar testes unitários (Pytest)
         run: |
           echo "Executando testes unitários com Pytest..."
           python -m pytest tests/ -o log_cli=true --tb=short | tee pytest_logs.txt
-          if (-Not ($?)) {
-              echo "ERRO nos testes unitários, verificar pytest_logs.txt."
-              exit 1
-          }
-          echo "Testes unitários concluídos."
+
+      - name: Testes unitários concluídos
+        if: success()
+        run: echo "Testes unitários concluídos."
+      
+      - name: ERRO nos testes unitários
+        if: failure()
+        run: echo "ERRO nos testes unitários, verificar pytest_logs.txt."
+
+  cd:
+    runs-on: self-hosted
+    needs: ci
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v3
+        continue-on-error: false
+
+      - name: Confirmação do checkout
+        run: |
+          echo "Código baixado com sucesso."
+
+      - name: Parar containers existentes
+        run: |
+          echo "Parando containers existentes..."
+          docker-compose down
+          echo "Containers finalizados."
+
+      - name: Subir nova versão da API
+        run: |
+          echo "Subindo nova versão da API..."
+          docker-compose up --build -d
+          echo "A nova versão da API subiu com sucesso."
+
+      - name: Healthcheck da API
+        run: |
+          echo "Realizando healthcheck do deploy..."
+          curl.exe --fail http://localhost:5000/score/33333333333
+      
+      - name: Confirmação do deploy
+        if: success()
+        run: |
+          echo "Deploy realizado com sucesso."
+
+      - name: Notificação de falha no deploy
+        if: failure()
+        run: |
+          echo "ERRO: Deploy falhou, verificar logs."
+
+      - name: Limpeza de containers antigos
+        run: |
+          docker system prune -f
