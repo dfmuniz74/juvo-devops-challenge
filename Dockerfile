@@ -4,10 +4,10 @@ WORKDIR /app
 
 COPY requirements.txt requirements.txt
 COPY app.py app.py
-COPY cert.pem cert.pem
-COPY key.pem key.pem
 
 RUN pip install --no-cache-dir -r requirements.txt
+
+RUN openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=localhost"
 
 EXPOSE 5000
 

@@ -21,30 +21,17 @@ Este projeto implementa uma API de score de crédito simulada, desenvolvida em F
    docker-compose up --build
    ```
 3. **Acessar a API:**
-   - Endpoint: `http://localhost:5000/score/<cpf>`
-   - Exemplo: `http://localhost:5000/score/12345678900`
+   - Endpoint: `https://localhost:4443/score/<cpf>`
+   - Exemplo: `https://localhost:4443/score/33333333333`
+   - **Importante:** A API aceita apenas conexões HTTPS. Requisições HTTP recebem resposta 426 (Upgrade Required).
 
-## Como Executar Localmente com HTTPS (Simulação de Produção)
-1. **Pré-requisitos:**
-   - Docker e Docker Compose instalados.
-   - OpenSSL instalado para gerar certificados (ou use os arquivos `cert.pem` e `key.pem` já presentes na raiz).
-2. **Gerar certificados autoassinados (se necessário):**
-   Abra o terminal Linux na raiz do projeto e execute:
-   ```cmd
-   openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 1 -nodes -subj "/CN=localhost"
-   ```
-3. **Build e execução:**
-   ```cmd
-   docker-compose up --build
-   ```
-4. **Acessar a API via HTTPS:**
-   - Endpoint: `https://localhost:5000/score/<cpf>`
-   - Exemplo: `https://localhost:5000/score/12345678900`
-   - O navegador pode alertar sobre certificado inseguro (autoassinado); aceite para testar.
-
-> **Importante:**
-> - Os arquivos `cert.pem` e `key.pem` devem estar na raiz do projeto e não devem ser versionados (adicione ao `.gitignore`).
-> - Em produção real, recomenda-se usar um proxy reverso (Nginx, Traefik) para gerenciar HTTPS.
+## Certificados e HTTPS
+- **Certificados autoassinados** (`cert.pem` e `key.pem`) são gerados automaticamente durante o build do container Docker, válidos por 365 dias. Não é necessário (nem recomendado) criar ou versionar esses arquivos manualmente.
+- Para desenvolvimento local fora do Docker, gere manualmente com:
+  ```sh
+  openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=localhost"
+  ```
+- Em produção real, recomenda-se usar um proxy reverso (Nginx, Traefik) e certificados válidos.
 
 ## Pipeline CI/CD
 - **CI:** Build, testes BDD e unitários automatizados.
@@ -81,18 +68,17 @@ Este projeto implementa uma API de score de crédito simulada, desenvolvida em F
 ## Instruções para Testes Manuais
 - Teste um CPF válido:
   ```sh
-  # Para HTTP (desenvolvimento):
-  curl http://localhost:5000/score/12345678900
-
-  # Para HTTPS (simulação de produção, certificado autoassinado):
-  curl -k https://localhost:5000/score/12345678900
-  # ou, para validar o certificado:
-  curl --cacert ./cert.pem https://localhost:5000/score/12345678900
+  curl -k https://localhost:4443/score/33333333333
   ```
 - Teste um CPF inválido:
   ```sh
-  curl http://localhost:5000/score/00000000000
+  curl -k https://localhost:4443/score/00000000000
   ```
+- **Nota:** O uso do parâmetro `-k` no curl é obrigatório devido ao certificado autoassinado. Requisições HTTP (sem HTTPS) não são aceitas e retornam 426.
+
+## Exemplo de Uso via Postman
+1. Importe uma requisição GET para `https://localhost:4443/score/33333333333`.
+2. Em "Settings" da requisição, marque "Disable SSL verification" para aceitar o certificado autoassinado.
 
 ## Instruções de Rollback Manual
 
@@ -115,7 +101,7 @@ Caso o deploy automatizado apresente falhas ou a nova versão da API apresente p
 
 4. **Verifique se a API voltou a funcionar**
    ```sh
-   curl http://localhost:5000/score/12345678900
+   curl -k https://localhost:4443/score/33333333333
    ```
 
 5. **(Opcional) Limpe imagens antigas**

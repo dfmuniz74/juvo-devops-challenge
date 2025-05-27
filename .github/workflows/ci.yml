@@ -35,7 +35,7 @@ jobs:
       - name: Verificar se a API iniciou
         run: |
           echo "Aguardando API iniciar..."
-          curl.exe --retry 10 --retry-delay 10 --retry-connrefused http://localhost:5000/score/33333333333
+          curl.exe --retry 10 --retry-delay 10 --retry-connrefused https://localhost:4443/score/33333333333
           echo "API iniciada com sucesso."
 
       - name: Instalar dependências Python (Behave e Pytest)
@@ -100,7 +100,7 @@ jobs:
       - name: Healthcheck da API
         run: |
           echo "Realizando healthcheck do deploy..."
-          curl.exe --fail http://localhost:5000/score/33333333333
+          curl.exe --fail https://localhost:4443/score/33333333333
       
       - name: Confirmação do deploy
         if: success()

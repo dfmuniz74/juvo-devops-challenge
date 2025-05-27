@@ -2,5 +2,5 @@ services:
   api:
     build: .
     ports:
-      - "127.0.0.1:5000:5000"
+      - "127.0.0.1:4443:5000"
     restart: always
