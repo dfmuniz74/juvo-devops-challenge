@@ -24,6 +24,28 @@ Este projeto implementa uma API de score de crédito simulada, desenvolvida em F
    - Endpoint: `http://localhost:5000/score/<cpf>`
    - Exemplo: `http://localhost:5000/score/12345678900`
 
+## Como Executar Localmente com HTTPS (Simulação de Produção)
+1. **Pré-requisitos:**
+   - Docker e Docker Compose instalados.
+   - OpenSSL instalado para gerar certificados (ou use os arquivos `cert.pem` e `key.pem` já presentes na raiz).
+2. **Gerar certificados autoassinados (se necessário):**
+   Abra o terminal Linux na raiz do projeto e execute:
+   ```cmd
+   openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 1 -nodes -subj "/CN=localhost"
+   ```
+3. **Build e execução:**
+   ```cmd
+   docker-compose up --build
+   ```
+4. **Acessar a API via HTTPS:**
+   - Endpoint: `https://localhost:5000/score/<cpf>`
+   - Exemplo: `https://localhost:5000/score/12345678900`
+   - O navegador pode alertar sobre certificado inseguro (autoassinado); aceite para testar.
+
+> **Importante:**
+> - Os arquivos `cert.pem` e `key.pem` devem estar na raiz do projeto e não devem ser versionados (adicione ao `.gitignore`).
+> - Em produção real, recomenda-se usar um proxy reverso (Nginx, Traefik) para gerenciar HTTPS.
+
 ## Pipeline CI/CD
 - **CI:** Build, testes BDD e unitários automatizados.
 - **CD:** Deploy automatizado local via Docker Compose, healthcheck pós-deploy, notificações de sucesso/falha, limpeza de containers antigos.
@@ -59,7 +81,13 @@ Este projeto implementa uma API de score de crédito simulada, desenvolvida em F
 ## Instruções para Testes Manuais
 - Teste um CPF válido:
   ```sh
+  # Para HTTP (desenvolvimento):
   curl http://localhost:5000/score/12345678900
+
+  # Para HTTPS (simulação de produção, certificado autoassinado):
+  curl -k https://localhost:5000/score/12345678900
+  # ou, para validar o certificado:
+  curl --cacert ./cert.pem https://localhost:5000/score/12345678900
   ```
 - Teste um CPF inválido:
   ```sh
