@@ -1,0 +1,121 @@
+Funcionalidade: API de Score de Crédito
+
+  Como um sistema de análise de crédito
+  Quero consultar o score de um usuário pelo CPF
+  Para fornecer informações financeiras relevantes de forma segura, escalável e confiável
+
+  # 🛡️ Segurança e conformidade
+  Cenário: Requisição via HTTPS obrigatória
+    Dado que um usuário tenta acessar a API via HTTP
+    Quando ele envia uma requisição insegura
+    Então a API deve rejeitar a conexão
+    E retornar um erro informando que apenas HTTPS é permitido
+    E o status da resposta deve ser 426 (Upgrade Required)
+
+  Cenário: Autenticação e autorização diferenciada
+    Dado que um usuário tenta acessar um endpoint protegido
+    Quando ele não fornece um token válido
+    Então a resposta deve conter uma mensagem de erro
+    E o status da resposta deve ser 403
+    E a tentativa deve ser registrada para auditoria de segurança
+
+  Cenário: Proteção contra ataques de força bruta
+    Dado que um usuário não autenticado tenta acessar a API repetidamente
+    Quando ele excede 5 tentativas inválidas em menos de 1 minuto
+    Então seu IP deve ser temporariamente bloqueado por 15 minutos
+    E um alerta de segurança deve ser gerado
+
+  Cenário: Proteção contra ataques DDoS
+    Dado que um usuário ou sistema externo envia um volume anormal de requisições
+    Quando o número de requisições ultrapassa 100 por segundo
+    Então a API deve ativar um mecanismo de **rate limiting**
+    E registrar um alerta para análise de tráfego
+
+  Cenário: Gerenciamento seguro de credenciais
+    Dado que um usuário autenticado acessa a API
+    Quando um token de acesso é utilizado
+    Então o token deve ser validado contra um sistema seguro
+    E credenciais nunca devem ser expostas em logs ou respostas
+
+  Cenário: Proteção contra injeção de código e validação de entrada
+    Dado que um usuário envia uma requisição contendo caracteres especiais
+    Quando a API processa a entrada de dados
+    Então todas as entradas devem ser validadas antes do processamento
+    E caracteres suspeitos devem ser rejeitados
+
+  # 🔍 Auditoria e rastreabilidade
+  Cenário: Registro de atividade do usuário
+    Dado que um usuário autenticado acessa a API
+    Quando ele realiza uma consulta de score de crédito
+    Então um registro da requisição deve ser armazenado no sistema de auditoria
+    E deve conter informações como CPF consultado, horário e usuário solicitante
+
+  Cenário: Monitoramento e resposta a incidentes
+    Dado que a API está operando normalmente
+    Quando um comportamento anômalo for detectado
+    Então a API deve ativar um modo de contenção para mitigar riscos
+    E um alerta deve ser enviado para o time de segurança
+
+  # 🚀 Escalabilidade e disponibilidade (SLAs, SLOs e SLIs diferenciados)
+  Cenário: Tempo de resposta para parceiros internos
+    Dado que um sistema interno consulta o score de crédito
+    Quando a API processa a requisição
+    Então o tempo de resposta deve ser inferior a 200ms
+    E o status da resposta deve ser 200
+
+  Cenário: Tempo de resposta para parceiros externos
+    Dado que um parceiro externo consulta a API
+    Quando a requisição é enviada
+    Então a resposta deve ser processada em menos de 500ms
+    E o status da resposta deve ser 200
+
+  Cenário: Disponibilidade do serviço conforme SLA
+    Dado que a API está em produção
+    Quando há um pico de acessos simultâneos
+    Então a API deve manter uma disponibilidade mínima de 99.9%
+    E o balanceador de carga deve distribuir as requisições corretamente
+
+  Cenário: Capacidade de lidar com picos de acesso
+    Dado que há múltiplas instâncias da API em execução
+    Quando o número de requisições simultâneas chega a 10.000 por segundo
+    Então o tempo de resposta deve permanecer dentro dos limites definidos
+    E o balanceador de carga deve gerenciar os acessos sem degradação
+
+  # ⚠️ Resiliência e recuperação de falhas
+  Cenário: Recuperação automática após falha
+    Dado que a API sofreu uma interrupção temporária
+    Quando o sistema identifica a falha
+    Então a API deve voltar a responder corretamente em menos de 5 minutos
+    E o status da resposta deve ser 200
+
+  Cenário: Alertas proativos de falhas
+    Dado que a API está operando normalmente
+    Quando a taxa de erro ultrapassa 0.1% das requisições em um intervalo de 5 minutos
+    Então um alerta deve ser disparado para o time de suporte
+    E métricas devem ser registradas para análise posterior
+
+  Cenário: Fallback para serviços externos indisponíveis
+    Dado que a API depende de um serviço externo para processar score de crédito
+    Quando esse serviço se torna indisponível
+    Então a API deve ativar um mecanismo de fallback e tentar um servidor secundário antes de retornar erro
+
+  # 🔗 Integração com parceiros externos
+  Cenário: SLA para parceiros externos
+    Dado que um parceiro autorizado consulta a API
+    Quando ele envia uma requisição autenticada
+    Então a resposta deve conter os dados solicitados
+    E o tempo de resposta deve estar dentro do limite acordado no SLA
+
+  # 🛠️ CI/CD e processos automatizados
+  Cenário: Integração com pipeline CI/CD
+    Dado que um novo código é enviado para o repositório
+    Quando o pipeline CI/CD é acionado
+    Então os testes automatizados devem ser executados
+    E a API deve ser implantada corretamente
+
+  Cenário: Coleta centralizada de logs para auditoria
+    Dado que a API processa requisições de score de crédito
+    Quando um erro ocorre durante uma consulta
+    Então um log detalhado deve ser registrado
+    E os logs devem ser mantidos por 90 dias para conformidade regulatória
+    E os logs devem ser enviados para um sistema de monitoramento centralizado
