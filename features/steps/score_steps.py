@@ -1,7 +1,9 @@
 from behave import given, when, then
 import requests
+import os
 
 BASE_URL = "https://localhost:4443/score/"
+CERT_PATH = os.path.join(os.path.dirname(__file__), '../../cert.pem')
 
 @given('o usuário possui um CPF válido "{cpf}"')
 def step_given_cpf_valido(context, cpf):
@@ -18,7 +20,10 @@ def step_given_http(context):
 @when('ele consulta seu score')
 def step_when_consulta_score(context):
     base_url = getattr(context, 'base_url', BASE_URL)
-    response = requests.get(f"{base_url}{context.cpf}", verify=False)
+    if base_url.startswith('https://'):
+        response = requests.get(f"{base_url}{context.cpf}", verify=CERT_PATH)
+    else:
+        response = requests.get(f"{base_url}{context.cpf}", verify=False)
     context.response = response
 
 @when('ele envia uma requisição insegura')
